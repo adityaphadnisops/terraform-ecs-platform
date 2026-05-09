@@ -1,0 +1,10 @@
+aws_region              = "ap-south-1"
+environment             = "prod"
+project_name            = "ecs-platform"
+vpc_cidr                = "10.0.0.0/16"
+container_image         = "public.ecr.aws/nginx/nginx:latest"
+alb_logs_bucket         = "my-unique-alb-logs-bucket"
+certificate_arn         = ""
+terraform_role_arn      = ""
+enable_waf              = true
+# backend config goes into backend.hcl (not here)
