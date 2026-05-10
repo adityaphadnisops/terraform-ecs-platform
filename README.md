@@ -353,51 +353,16 @@ Description: Database private subnet CIDRs
 
 # Compute
 
-Variable: container_image  
-Default: public.ecr.aws/nginx/nginx:latest  
-Description: Container image (ARM64 compatible)
-
----
-
-Variable: container_port  
-Default: 80  
-Description: Application port exposed by the container
-
----
-
-Variable: ecs_task_cpu  
-Default: 1024  
-Description: CPU units for ECS task (1024 = 1 vCPU)
-
----
-
-Variable: ecs_task_memory  
-Default: 2048  
-Description: Memory allocation for ECS task in MiB
-
----
-
-Variable: ecs_desired_count  
-Default: 2  
-Description: Desired number of ECS tasks
-
----
-
-Variable: ecs_min_count  
-Default: 1  
-Description: Minimum ECS tasks for auto scaling
-
----
-
-Variable: ecs_max_count  
-Default: 4  
-Description: Maximum ECS tasks for auto scaling
-
----
-
-Variable: ecs_cpu_target  
-Default: 60  
-Description: CPU utilisation target (%) for ECS auto scaling
+| Variable | Default | Description |
+|---|---|---|
+| `container_image` | `public.ecr.aws/nginx/nginx:latest` | Container image (ARM64 compatible) |
+| `container_port` | `80` | Application port exposed by the container |
+| `ecs_task_cpu` | `1024` | CPU units for ECS task (1024 = 1 vCPU) |
+| `ecs_task_memory` | `2048` | Memory allocation for ECS task in MiB |
+| `ecs_desired_count` | `2` | Desired number of ECS tasks |
+| `ecs_min_count` | `1` | Minimum ECS tasks for auto scaling |
+| `ecs_max_count` | `4` | Maximum ECS tasks for auto scaling |
+| `ecs_cpu_target` | `60` | CPU utilisation target (%) for ECS auto scaling |
 
 📦 Module Documentation
 module/vpc
@@ -441,47 +406,16 @@ Outputs: database_endpoint (proxy endpoint), database_secret_arn, database_id
 
 # Database
 
-Variable: database_name  
-Default: appdb  
-Description: Initial PostgreSQL database name
+| Variable | Default | Description |
+|---|---|---|
+| `database_name` | `appdb` | Initial PostgreSQL database name |
+| `rds_engine_version` | `16.4` | PostgreSQL engine version |
+| `rds_instance_class` | `db.t4g.medium` | ARM64 Graviton RDS instance type |
+| `rds_allocated_storage` | `20` | Allocated database storage in GB (gp3) |
+| `rds_multi_az` | `true` | Enables Multi-AZ deployment for high availability |
+| `rds_master_username` | `dbadmin` | Master username for PostgreSQL |
+| `rds_backup_retention` | `7` | Automated backup retention period in days |
 
----
-
-Variable: rds_engine_version  
-Default: 16.4  
-Description: PostgreSQL engine version
-
----
-
-Variable: rds_instance_class  
-Default: db.t4g.medium  
-Description: ARM64 Graviton RDS instance type
-
----
-
-Variable: rds_allocated_storage  
-Default: 20  
-Description: Allocated database storage in GB (gp3)
-
----
-
-Variable: rds_multi_az  
-Default: true  
-Description: Enables Multi-AZ deployment for high availability
-
----
-
-Variable: rds_master_username  
-Default: dbadmin  
-Description: Master username for PostgreSQL
-
----
-
-Variable: rds_backup_retention  
-Default: 7  
-Description: Automated backup retention period in days
-
----
 
 🔄 CI/CD Pipeline
 The repository includes a GitHub Actions workflow (.github/workflows/terraform.yml):
@@ -544,159 +478,61 @@ Auto Scaling: Three policies (CPU, memory, ALB request count) ensure capacity ma
 
 # Security
 
-Variable: certificate_arn  
-Default: ""  
-Description: ACM certificate ARN for HTTPS (empty = HTTP only)
-
----
-
-Variable: enable_waf  
-Default: true  
-Description: Enables AWS WAF managed rules on ALB
-
----
-
-Variable: terraform_role_arn  
-Default: ""  
-Description: IAM role ARN for Terraform assume-role access (CI/CD)
+| Variable | Default | Description |
+|---|---|---|
+| `certificate_arn` | `""` | ACM certificate ARN for HTTPS (empty = HTTP only) |
+| `enable_waf` | `true` | Enables AWS WAF managed rules on ALB |
+| `terraform_role_arn` | `""` | IAM role ARN for Terraform assume-role access (CI/CD) |
 
 ---
 
 # Observability
 
-Variable: log_retention_days  
-Default: 30  
-Description: CloudWatch log retention period in days
+| Variable | Default | Description |
+|---|---|---|
+| `log_retention_days` | `30` | CloudWatch log retention period in days |
 
 ---
 
 # Security Deep-Dive
 
-Control: Network isolation  
-Implementation: ECS tasks and RDS run in private subnets; only ALB is internet-facing
-
----
-
-Control: Security group chain  
-Implementation: ALB SG → ECS SG → RDS SG with strict least-privilege rules
-
----
-
-Control: Secrets management  
-Implementation: Database credentials stored in AWS Secrets Manager only
-
----
-
-Control: Automatic rotation  
-Implementation: Python Lambda rotates RDS credentials every 30 days
-
----
-
-Control: Encryption at rest  
-Implementation: RDS, S3 buckets, and Terraform state encrypted using SSE/KMS
-
----
-
-Control: Encryption in transit  
-Implementation: ALB HTTPS-ready with ACM certificate support
-
----
-
-Control: WAF protection  
-Implementation: AWS Managed Core Rule Set protects against OWASP Top 10
-
----
-
-Control: IAM least privilege  
-Implementation: ECS task role scoped to only required Secrets Manager ARN
-
----
-
-Control: Deletion protection  
-Implementation: Enabled on ALB and RDS to prevent accidental deletion
-
----
-
-Control: Public access block  
-Implementation: S3 buckets block all public ACLs and public policies
+| Control | Implementation |
+|---|---|
+| Network isolation | ECS tasks and RDS run in private subnets; only ALB is internet-facing |
+| Security group chain | ALB SG → ECS SG → RDS SG with strict least-privilege rules |
+| Secrets management | Database credentials stored in AWS Secrets Manager only |
+| Automatic rotation | Python Lambda rotates RDS credentials every 30 days |
+| Encryption at rest | RDS, S3 buckets, and Terraform state encrypted using SSE/KMS |
+| Encryption in transit | ALB HTTPS-ready with ACM certificate support |
+| WAF protection | AWS Managed Core Rule Set protects against OWASP Top 10 |
+| IAM least privilege | ECS task role scoped to only required Secrets Manager ARN |
+| Deletion protection | Enabled on ALB and RDS to prevent accidental deletion |
+| Public access block | S3 buckets block all public ACLs and public policies |
 
 ---
 
 # Cost Optimisation
 
-Decision: ARM64 (Graviton)  
-Rationale: Better price/performance compared to x86 for ECS and RDS
-
----
-
-Decision: Fargate serverless compute  
-Rationale: No EC2 management overhead; pay only for running tasks
-
----
-
-Decision: gp3 storage  
-Rationale: Lower baseline storage cost with burstable IOPS
-
----
-
-Decision: RDS Proxy  
-Rationale: Reduces database connections and improves scalability
-
----
-
-Decision: Auto Scaling  
-Rationale: Scales in during low traffic and scales out during spikes
-
----
-
-Decision: NAT Gateway per AZ  
-Rationale: Avoids cross-AZ NAT traffic charges and improves availability
-
----
-
-Decision: Log retention  
-Rationale: Default 30-day retention reduces long-term CloudWatch costs
+| Decision | Rationale |
+|---|---|
+| ARM64 (Graviton) | Better price/performance compared to x86 for ECS and RDS |
+| Fargate serverless compute | No EC2 management overhead; pay only for running tasks |
+| gp3 storage | Lower baseline storage cost with burstable IOPS |
+| RDS Proxy | Reduces database connections and improves scalability |
+| Auto Scaling | Scales in during low traffic and scales out during spikes |
+| NAT Gateway per AZ | Avoids cross-AZ NAT traffic charges and improves availability |
+| Log retention | Default 30-day retention reduces long-term CloudWatch costs |
 
 ---
 
 # Troubleshooting
 
-Issue: terraform init fails with “S3 bucket does not exist”  
-Cause: Backend S3 bucket not created  
-Fix: Create the backend bucket manually before running terraform init
-
----
-
-Issue: terraform validate fails with “Module not installed”  
-Cause: terraform init was not executed with backend config  
-Fix: Re-run using terraform init -backend-config=backend.hcl
-
----
-
-Issue: ALB health checks failing  
-Cause: Container not listening on configured port  
-Fix: Ensure container exposes the same port as var.container_port
-
----
-
-Issue: ECS tasks stuck in PENDING  
-Cause: NAT Gateway route missing or SG blocks outbound traffic  
-Fix: Verify private route tables have NAT access
-
----
-
-Issue: Container cannot connect to RDS  
-Cause: Security group mismatch  
-Fix: Ensure RDS SG allows ingress from ECS SG on port 5432
-
----
-
-Issue: Secrets rotation fails  
-Cause: Lambda VPC networking issue  
-Fix: Ensure Lambda subnets can access RDS and Secrets Manager
-
----
-
-Issue: terraform plan shows unexpected destruction  
-Cause: State drift or manual infrastructure changes  
-Fix: Run terraform refresh before planning again
+| Issue | Cause | Fix |
+|---|---|---|
+| `terraform init` fails with “S3 bucket does not exist” | Backend S3 bucket not created | Create the backend bucket manually before running terraform init |
+| `terraform validate` fails with “Module not installed” | terraform init was not executed with backend config | Re-run using `terraform init -backend-config=backend.hcl` |
+| ALB health checks failing | Container not listening on configured port | Ensure container exposes the same port as `var.container_port` |
+| ECS tasks stuck in `PENDING` | NAT Gateway route missing or SG blocks outbound traffic | Verify private route tables have NAT access |
+| Container cannot connect to RDS | Security group mismatch | Ensure RDS SG allows ingress from ECS SG on port `5432` |
+| Secrets rotation fails | Lambda VPC networking issue | Ensure Lambda subnets can access RDS and Secrets Manager |
+| `terraform plan` shows unexpected destruction | State drift or manual infrastructure changes | Run `terraform refresh` before planning again |
