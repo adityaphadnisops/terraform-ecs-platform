@@ -536,3 +536,5 @@ Auto Scaling: Three policies (CPU, memory, ALB request count) ensure capacity ma
 | Container cannot connect to RDS | Security group mismatch | Ensure RDS SG allows ingress from ECS SG on port `5432` |
 | Secrets rotation fails | Lambda VPC networking issue | Ensure Lambda subnets can access RDS and Secrets Manager |
 | `terraform plan` shows unexpected destruction | State drift or manual infrastructure changes | Run `terraform refresh` before planning again |
+
+Q13 and Q14 are included in the written answers section due to time constraints.
